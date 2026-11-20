@@ -142,11 +142,20 @@ export const GAME_MODE_OPTIONS: Array<{
   },
 ];
 
-export function getSubjectQuestionCount(subject: SubjectId, level: QuestionLevel | 'all'): number {
+export function getSubjectQuestionCount(
+  subject: SubjectId,
+  level: QuestionLevel | 'all',
+  gameMode?: GameMode
+): number {
   return ALL_QUESTIONS.filter((q) => {
     const matchSubject = subject === 'campuran' || q.subject === subject;
     const matchLevel = level === 'all' || q.level === level;
-    return matchSubject && matchLevel;
+    const matchMode =
+      !gameMode ||
+      gameMode === 'campuran' ||
+      (gameMode === 'pilihan_ganda' && q.format === 'mc') ||
+      (gameMode === 'benar_salah' && q.format === 'tf');
+    return matchSubject && matchLevel && matchMode;
   }).length;
 }
 
@@ -287,8 +296,11 @@ export function drawUniqueQuestion(
   level: QuestionLevel | 'all',
   gameMode: GameMode,
   usedQuestionIds: Set<string>,
-  matchUsedIds: Set<string>
+  matchUsedIds: Set<string>,
+  excludeQuestionId?: string
 ): Question {
+  const matchesSubject = (q: Question) => subject === 'campuran' || q.subject === subject;
+  const matchesLevel = (q: Question) => level === 'all' || q.level === level;
   const matchesMode = (q: Question) => {
     if (gameMode === 'pilihan_ganda') return q.format === 'mc';
     if (gameMode === 'benar_salah') return q.format === 'tf';
@@ -298,16 +310,17 @@ export function drawUniqueQuestion(
   // Tier 1: Exact subject + exact level + exact mode + never used in tournament
   let pool = ALL_QUESTIONS.filter(
     (q) =>
-      (subject === 'campuran' || q.subject === subject) &&
-      (level === 'all' || q.level === level) &&
+      matchesSubject(q) &&
+      matchesLevel(q) &&
       matchesMode(q) &&
       !usedQuestionIds.has(q.id) &&
       !matchUsedIds.has(q.id)
   );
 
-  // If Matematika curated pool is exhausted, generate fresh unique procedural Math questions at the exact requested level!
+  // If Matematika curated pool is exhausted, generate fresh unique procedural Math questions at the exact requested level & mode!
   if (pool.length === 0 && subject === 'matematika') {
-    const effectiveLevel: QuestionLevel = level === 'all' ? (([1, 2, 3] as const)[Math.floor(Math.random() * 3)]) : level;
+    const effectiveLevel: QuestionLevel =
+      level === 'all' ? ([1, 2, 3] as const)[Math.floor(Math.random() * 3)] : level;
     const effectiveFormat: QuestionFormat =
       gameMode === 'benar_salah' ? 'tf' : gameMode === 'pilihan_ganda' ? 'mc' : Math.random() < 0.6 ? 'mc' : 'tf';
     const generated = generateProceduralMathQuestion(effectiveLevel, effectiveFormat);
@@ -316,36 +329,31 @@ export function drawUniqueQuestion(
     return generated;
   }
 
-  // Tier 2: Same subject + exact mode across adjacent levels (if massive tournament exhausted 1 level's curated pool)
+  // Tier 2: Keep EXACT subject + EXACT level + EXACT mode, allowing questions from earlier matches
+  // to reappear in random order for other groups while NEVER repeating within the same match!
   if (pool.length === 0) {
     pool = ALL_QUESTIONS.filter(
       (q) =>
-        (subject === 'campuran' || q.subject === subject) &&
+        matchesSubject(q) &&
+        matchesLevel(q) &&
         matchesMode(q) &&
-        !usedQuestionIds.has(q.id) &&
         !matchUsedIds.has(q.id)
     );
   }
 
-  // Tier 3: Same subject + exact level (any format if single-format exhausted)
+  // Tier 3: Even if a single marathon match exhausts every question in this exact level+mode,
+  // recycle within the EXACT same subject, level, and mode (never leak to another level, mode, or subject!)
   if (pool.length === 0) {
-    pool = ALL_QUESTIONS.filter(
-      (q) =>
-        (subject === 'campuran' || q.subject === subject) &&
-        (level === 'all' || q.level === level) &&
-        !usedQuestionIds.has(q.id) &&
-        !matchUsedIds.has(q.id)
+    const exactPool = ALL_QUESTIONS.filter(
+      (q) => matchesSubject(q) && matchesLevel(q) && matchesMode(q)
     );
+    const nonImmediate = exactPool.filter((q) => q.id !== excludeQuestionId);
+    pool = nonImmediate.length > 0 ? nonImmediate : exactPool;
   }
 
-  // Tier 4: Other subjects (still never repeating inside the same match!)
+  // Safety net (should never be reached since every subject+level has both mc & tf)
   if (pool.length === 0) {
-    pool = ALL_QUESTIONS.filter((q) => matchesMode(q) && !matchUsedIds.has(q.id));
-  }
-
-  // Absolute fallback
-  if (pool.length === 0) {
-    pool = ALL_QUESTIONS;
+    pool = ALL_QUESTIONS.filter((q) => matchesSubject(q) && matchesMode(q));
   }
 
   const picked = pool[Math.floor(Math.random() * pool.length)];

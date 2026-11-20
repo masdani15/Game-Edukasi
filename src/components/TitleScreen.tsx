@@ -173,7 +173,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           <Languages className="w-4 h-4" />
           <Globe className="w-4 h-4" />
           <span className="text-xs font-medium text-slate-300">
-            432+ Soal Kurasi SD &amp; Generator Matematika
+            700+ Soal Kurasi SD &amp; Generator Matematika
           </span>
         </div>
 

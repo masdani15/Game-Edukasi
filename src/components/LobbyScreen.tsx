@@ -60,7 +60,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   );
 
   const selectedSubjectInfo = SUBJECT_LIST.find((s) => s.id === subject)!;
-  const availableQuestions = getSubjectQuestionCount(subject, level);
+  const availableQuestions = getSubjectQuestionCount(subject, level, gameMode);
 
   const handleSelectSubject = (id: SubjectId) => {
     soundEngine.playTap();
@@ -239,7 +239,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {LEVEL_OPTIONS.map((opt) => {
                   const active = level === opt.value;
-                  const qCount = getSubjectQuestionCount(subject, opt.value);
+                  const qCount = getSubjectQuestionCount(subject, opt.value, gameMode);
                   return (
                     <button
                       key={String(opt.value)}

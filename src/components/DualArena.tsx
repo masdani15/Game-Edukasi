@@ -119,6 +119,8 @@ export const DualArena: React.FC<DualArenaProps> = ({
   // Independent lock refs per side so touching Left never blocks Right!
   const leftLockedRef = useRef<boolean>(false);
   const rightLockedRef = useRef<boolean>(false);
+  const leftLastIdRef = useRef<string>(left.question.id);
+  const rightLastIdRef = useRef<string>(right.question.id);
   const leftTimeoutRef = useRef<number | null>(null);
   const rightTimeoutRef = useRef<number | null>(null);
 
@@ -221,6 +223,8 @@ export const DualArena: React.FC<DualArenaProps> = ({
       };
     });
 
+    const lastIdRef = side === 'left' ? leftLastIdRef : rightLastIdRef;
+
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(() => {
       const nextQ = drawUniqueQuestion(
@@ -228,8 +232,10 @@ export const DualArena: React.FC<DualArenaProps> = ({
         config.level,
         config.gameMode,
         usedQuestionIds.current,
-        matchUsedIdsRef.current
+        matchUsedIdsRef.current,
+        lastIdRef.current
       );
+      lastIdRef.current = nextQ.id;
       setSide((prev) => ({
         ...prev,
         question: nextQ,
