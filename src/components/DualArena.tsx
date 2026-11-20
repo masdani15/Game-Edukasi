@@ -5,6 +5,8 @@ import {
   ArrowRight,
   Award,
   Check,
+  Maximize2,
+  Minimize2,
   Pause,
   Play,
   RotateCcw,
@@ -29,7 +31,9 @@ interface DualArenaProps {
   config: TournamentConfig;
   usedQuestionIds: React.MutableRefObject<Set<string>>;
   isMuted: boolean;
+  isFullscreen: boolean;
   onToggleMute: () => void;
+  onToggleFullscreen: () => void;
   onFinishMatch: (result: {
     scoreA: number;
     scoreB: number;
@@ -69,7 +73,9 @@ export const DualArena: React.FC<DualArenaProps> = ({
   config,
   usedQuestionIds,
   isMuted,
+  isFullscreen,
   onToggleMute,
+  onToggleFullscreen,
   onFinishMatch,
   onAbortMatch,
 }) => {
@@ -508,6 +514,15 @@ export const DualArena: React.FC<DualArenaProps> = ({
                   className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
                 >
                   {phase === 'PAUSED' ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={onToggleFullscreen}
+                  aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+                  title={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
+                >
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"

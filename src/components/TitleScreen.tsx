@@ -7,6 +7,8 @@ import {
   Globe,
   HelpCircle,
   Languages,
+  Maximize2,
+  Minimize2,
   Play,
   ShieldCheck,
   Trophy,
@@ -19,14 +21,18 @@ import { soundEngine } from '../utils/soundEngine';
 
 interface TitleScreenProps {
   isMuted: boolean;
+  isFullscreen: boolean;
   onToggleMute: () => void;
+  onToggleFullscreen: () => void;
   onEnterSetup: () => void;
   children?: React.ReactNode;
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
   isMuted,
+  isFullscreen,
   onToggleMute,
+  onToggleFullscreen,
   onEnterSetup,
   children,
 }) => {
@@ -56,6 +62,17 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           >
             <HelpCircle className="w-4 h-4" />
             Cara Bermain
+          </button>
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+            className="px-4 py-2.5 rounded-xl glass-dark hover:bg-slate-800/80 text-slate-200 font-semibold text-sm flex items-center gap-2 cursor-pointer transition-colors"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <span className="hidden sm:inline">
+              {isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+            </span>
           </button>
           <button
             type="button"

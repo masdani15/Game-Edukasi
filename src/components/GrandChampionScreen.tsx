@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, Medal, RotateCcw, Trophy } from 'lucide-react';
+import { Award, Maximize2, Medal, Minimize2, RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react';
 import { SUBJECT_LIST } from '../data/questionBank';
 import { Team, TournamentConfig } from '../types/game';
 import { sortTeamsLeaderboard } from '../utils/tournament';
@@ -10,6 +10,10 @@ interface GrandChampionScreenProps {
   teams: Team[];
   championId: string | null;
   usedQuestionCount: number;
+  isMuted: boolean;
+  isFullscreen: boolean;
+  onToggleMute: () => void;
+  onToggleFullscreen: () => void;
   onPlayAgainSameTeams: () => void;
   onBackToLobby: () => void;
 }
@@ -19,6 +23,10 @@ export const GrandChampionScreen: React.FC<GrandChampionScreenProps> = ({
   teams,
   championId,
   usedQuestionCount,
+  isMuted,
+  isFullscreen,
+  onToggleMute,
+  onToggleFullscreen,
   onPlayAgainSameTeams,
   onBackToLobby,
 }) => {
@@ -32,7 +40,29 @@ export const GrandChampionScreen: React.FC<GrandChampionScreenProps> = ({
   const levelText = config.level === 'all' ? 'Semua Level' : `Level ${config.level}`;
 
   return (
-    <div className="min-h-screen arena-dark-canvas text-white flex flex-col justify-between p-6 lg:p-12">
+    <div className="min-h-screen arena-dark-canvas text-white flex flex-col justify-between p-6 lg:p-10">
+      <div className="max-w-5xl w-full mx-auto flex justify-end gap-2.5">
+        <button
+          type="button"
+          onClick={onToggleFullscreen}
+          aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+          className="px-4 py-2.5 rounded-xl glass-dark hover:bg-slate-800/80 text-slate-200 font-semibold text-sm flex items-center gap-2 cursor-pointer transition-colors"
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          <span className="hidden sm:inline">
+            {isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onToggleMute}
+          aria-label={isMuted ? 'Aktifkan suara' : 'Matikan suara'}
+          className="p-2.5 rounded-xl glass-dark hover:bg-slate-800/80 text-slate-200 cursor-pointer transition-colors"
+        >
+          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        </button>
+      </div>
+
       <div className="max-w-5xl w-full mx-auto space-y-10 my-auto">
         {/* Champion Header */}
         <div className="text-center space-y-4">

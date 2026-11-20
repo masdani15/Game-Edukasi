@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
   Award,
   CheckCircle2,
+  Maximize2,
+  Minimize2,
   Play,
   Settings2,
   ShieldCheck,
@@ -22,7 +24,9 @@ interface TournamentHubProps {
   usedQuestionCount: number;
   drawTriggerKey: number;
   isMuted: boolean;
+  isFullscreen: boolean;
   onToggleMute: () => void;
+  onToggleFullscreen: () => void;
   onReshuffleBracket: () => void;
   onStartMatch: (matchId: string) => void;
   onBackToLobby: () => void;
@@ -36,7 +40,9 @@ export const TournamentHub: React.FC<TournamentHubProps> = ({
   usedQuestionCount,
   drawTriggerKey,
   isMuted,
+  isFullscreen,
   onToggleMute,
+  onToggleFullscreen,
   onReshuffleBracket,
   onStartMatch,
   onBackToLobby,
@@ -145,7 +151,20 @@ export const TournamentHub: React.FC<TournamentHubProps> = ({
           </button>
         </nav>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            aria-label={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+            title={isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+            className="p-2.5 sm:px-3.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200 text-slate-700 font-semibold text-sm flex items-center gap-2 transition-colors cursor-pointer"
+          >
+            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            <span className="hidden lg:inline">
+              {isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={onToggleMute}

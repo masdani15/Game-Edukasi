@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DualArena } from './components/DualArena';
 import { GrandChampionScreen } from './components/GrandChampionScreen';
 import { LobbyScreen } from './components/LobbyScreen';
@@ -43,10 +43,58 @@ export default function App() {
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
   const [championId, setChampionId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [drawTriggerKey, setDrawTriggerKey] = useState<number>(0);
 
   // Global anti-cheat tracker: ensures no two groups ever receive the same question during the tournament
   const usedQuestionIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      const doc = document as Document & {
+        webkitFullscreenElement?: Element | null;
+      };
+      setIsFullscreen(Boolean(document.fullscreenElement || doc.webkitFullscreenElement));
+    };
+
+    syncFullscreen();
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen);
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreen);
+      document.removeEventListener('webkitfullscreenchange', syncFullscreen);
+    };
+  }, []);
+
+  const handleToggleFullscreen = async () => {
+    soundEngine.playTap();
+    try {
+      const doc = document as Document & {
+        webkitFullscreenElement?: Element | null;
+        webkitExitFullscreen?: () => Promise<void> | void;
+      };
+      const el = document.documentElement as HTMLElement & {
+        webkitRequestFullscreen?: () => Promise<void> | void;
+      };
+
+      const active = Boolean(document.fullscreenElement || doc.webkitFullscreenElement);
+      if (!active) {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          await el.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
+      }
+    } catch {
+      // Ignore if browser or iframe blocks fullscreen API
+    }
+  };
 
   const handleToggleMute = () => {
     const nextMuted = !isMuted;
@@ -250,7 +298,9 @@ export default function App() {
         config={config}
         usedQuestionIds={usedQuestionIdsRef}
         isMuted={isMuted}
+        isFullscreen={isFullscreen}
         onToggleMute={handleToggleMute}
+        onToggleFullscreen={handleToggleFullscreen}
         onFinishMatch={handleFinishMatch}
         onAbortMatch={() => {
           setActiveMatchId(null);
@@ -267,6 +317,10 @@ export default function App() {
         teams={teams}
         championId={championId}
         usedQuestionCount={usedQuestionIdsRef.current.size}
+        isMuted={isMuted}
+        isFullscreen={isFullscreen}
+        onToggleMute={handleToggleMute}
+        onToggleFullscreen={handleToggleFullscreen}
         onPlayAgainSameTeams={handlePlayAgainSameTeams}
         onBackToLobby={() => {
           setScreen('TITLE');
@@ -286,7 +340,9 @@ export default function App() {
           usedQuestionCount={usedQuestionIdsRef.current.size}
           drawTriggerKey={drawTriggerKey}
           isMuted={isMuted}
+          isFullscreen={isFullscreen}
           onToggleMute={handleToggleMute}
+          onToggleFullscreen={handleToggleFullscreen}
           onReshuffleBracket={handleReshuffleBracket}
           onStartMatch={handleStartMatch}
           onBackToLobby={() => setShowSetupModal(true)}
@@ -308,7 +364,9 @@ export default function App() {
     <>
       <TitleScreen
         isMuted={isMuted}
+        isFullscreen={isFullscreen}
         onToggleMute={handleToggleMute}
+        onToggleFullscreen={handleToggleFullscreen}
         onEnterSetup={() => setShowSetupModal(true)}
       />
       {showSetupModal && (
