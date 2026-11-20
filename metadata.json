@@ -1,0 +1,6 @@
+{
+  "name": "Arena Estafet Cerdas IFP",
+  "description": "Kumpulan game edukasi adu cepat estafet layar sentuh IFP untuk siswa SD oleh Afri Dani Saputra, Guru SD Anugerah Abadi 1 Bengalon.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
